@@ -38,5 +38,5 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# data too large to go to GitHub
-model-data/
+# raw data which doesn't need to go to GitHub
+raw-data/
