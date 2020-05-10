@@ -1,7 +1,8 @@
 library(raster)
 library(tidyverse)
+library(lubridate)
 
-path <- "model-data/United-Kingdom_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF/monthly/"
+path <- "raw-data/United-Kingdom_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF/monthly/"
 files <- dir(path, pattern = ".tif$")
 
 Brk_pvout <- stack()
@@ -14,13 +15,27 @@ rm(files, path, i)
 coords_EL <- tibble(x = -3.050532, y = 56.227046)
 
 # extract PV output for Easter Lalathen
-Dat_pvout <- raster::extract(Brk_pvout, coords_EL) %>%
+Dat_solar <- raster::extract(Brk_pvout, coords_EL) %>%
   as_tibble() %>%
   gather(key = "key", value = "kwh_kwp") %>%
   mutate(month = str_extract(key, "\\d+") %>% as.numeric()) %>%
   select(month, kwh_kwp)
 
-rm(Brk_pvout)
+# read in cloud % raster brick
+Brk_cld <- brick("raw-data/cru_ts4.03.2011.2018.cld.dat.nc", varname = "cld")
 
-# write out pvout dataset
-write_rds(Dat_pvout, path = "model-data/kwh-per-kwp-easter-lalathen.rds")
+# extract Easter Lalathen values and summarise 8-year-mean
+Dat_solar <- raster::extract(Brk_cld, coords_EL) %>%
+  as_tibble() %>%
+  gather(key = "key", value = "cld_pc") %>%
+  mutate(date = key %>%
+           str_replace("X", "") %>%
+           ymd(),
+         month = month(date)) %>%
+  group_by(month) %>%
+  summarise(cld_pc = mean(cld_pc),
+            sd = sd(cld_pc)) %>%
+  right_join(Dat_solar, by = "month")
+
+# write out dataset
+write_rds(Dat_solar, path = "model-data/solar-gis-data-easter-lalathen.rds")
