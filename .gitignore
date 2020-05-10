@@ -40,3 +40,6 @@ vignettes/*.pdf
 
 # raw data which doesn't need to go to GitHub
 raw-data/
+
+# private information
+location-private.R

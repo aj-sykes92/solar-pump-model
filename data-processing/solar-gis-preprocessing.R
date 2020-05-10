@@ -11,10 +11,10 @@ for(i in 1:length(files)){
 }
 rm(files, path, i)
 
-# longitude and latitude for Easter Lalathen
-coords_EL <- tibble(x = -3.050532, y = 56.227046)
+# longitude and latitude
+source("data-processing/location-private.R")
 
-# extract PV output for Easter Lalathen
+# extract PV output
 Dat_solar <- raster::extract(Brk_pvout, coords_EL) %>%
   as_tibble() %>%
   gather(key = "key", value = "kwh_kwp") %>%
@@ -24,7 +24,7 @@ Dat_solar <- raster::extract(Brk_pvout, coords_EL) %>%
 # read in cloud % raster brick
 Brk_cld <- brick("raw-data/cru_ts4.03.2011.2018.cld.dat.nc", varname = "cld")
 
-# extract Easter Lalathen values and summarise 8-year-mean
+# extract values and summarise 8-year-mean
 Dat_solar <- raster::extract(Brk_cld, coords_EL) %>%
   as_tibble() %>%
   gather(key = "key", value = "cld_pc") %>%
@@ -33,9 +33,8 @@ Dat_solar <- raster::extract(Brk_cld, coords_EL) %>%
            ymd(),
          month = month(date)) %>%
   group_by(month) %>%
-  summarise(cld_pc = mean(cld_pc),
-            sd = sd(cld_pc)) %>%
+  summarise(cld_pc_av = mean(cld_pc)) %>%
   right_join(Dat_solar, by = "month")
 
 # write out dataset
-write_rds(Dat_solar, path = "model-data/solar-gis-data-easter-lalathen.rds")
+write_rds(Dat_solar, path = "model-data/solar-gis-data-el.rds")
