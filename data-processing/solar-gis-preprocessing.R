@@ -33,7 +33,8 @@ Dat_solar <- raster::extract(Brk_cld, coords_EL) %>%
            ymd(),
          month = month(date)) %>%
   group_by(month) %>%
-  summarise(cld_pc_av = mean(cld_pc)) %>%
+  summarise(cld_pc_av = mean(cld_pc),
+            cld_pc_sd = sd(cld_pc)) %>%
   right_join(Dat_solar, by = "month")
 
 # write out dataset
