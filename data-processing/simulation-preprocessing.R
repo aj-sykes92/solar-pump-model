@@ -21,7 +21,7 @@ Dat_sim <- Dat_sim %>%
   mutate(lon = coords_EL$x,
          lat = coords_EL$y)
 
-# add in sunrise, sunset, etc.
+# add in solar angle
 library(insol)
 
 Dat_sim <- Dat_sim %>%
@@ -32,7 +32,14 @@ Dat_sim <- Dat_sim %>%
          sunset = pmap_dbl(list(lat, lon, yday, time_zone), function(a, b, c, d){
            return(daylength(a, b, c, d)[2])
          })) %>%
-  select(-lat, -lon, -time_zone)
+  select(-time_zone)
+
+library(oce)
+
+Dat_sim <- Dat_sim %>%
+  mutate(solar_alt = pmap_dbl(list(dttm, lon, lat), function(a, b, c){
+    return(sunAngle(a, b, c)$altitude)
+  }))
 
 # write out rds
 write_rds(Dat_sim, "model-data/simulation-base-data.rds")
