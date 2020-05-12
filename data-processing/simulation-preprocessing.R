@@ -41,5 +41,9 @@ Dat_sim <- Dat_sim %>%
     return(sunAngle(a, b, c)$altitude)
   }))
 
+# added to remove unneeded variables
+Dat_sim <- Dat_sim %>%
+  select(-(lon:sunset))
+
 # write out rds
 write_rds(Dat_sim, "model-data/simulation-base-data.rds")
