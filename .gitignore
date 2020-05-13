@@ -43,3 +43,4 @@ raw-data/
 
 # private information
 location-private.R
+deploy-app.R
